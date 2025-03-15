@@ -1,0 +1,54 @@
+# Node.js / TypeScript
+node_modules/
+dist/
+.build/
+.cache/
+out/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.vscode/
+.DS_Store
+.env
+.env.local
+coverage/
+
+# .NET / C#
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.mdb
+*.log
+*.so
+*.db
+*.suo
+*.user
+*.lock.json
+*.cache
+*.nupkg
+*.psess
+.vscode/
+.vs/
+.idea/
+_ReSharper.Caches/
+.project/
+*.csproj.user
+*.db-shm
+*.db-wal
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Build artifacts
+*.out
+*.o
+*.a
+*.d
+*.gcda
+*.gcno
+*.gcov
+*.pyc
