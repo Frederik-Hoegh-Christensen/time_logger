@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,28 +19,9 @@ namespace Infrastructure.Persistence.Contexts
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Freelancer → Project (1-to-Many)
-            modelBuilder.Entity<Project>()
-                .HasOne(p => p.Freelancer)
-                .WithMany(f => f.Projects)
-                .HasForeignKey(p => p.FreelancerId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Project → TimeRegistration (1-to-Many)
-            modelBuilder.Entity<TimeRegistration>()
-                .HasOne(tr => tr.Project)
-                .WithMany(p => p.TimeRegistrations)
-                .HasForeignKey(tr => tr.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // Freelancer → TimeRegistration (1-to-Many) (Redundant FK for validation)
-            modelBuilder.Entity<TimeRegistration>()
-                .HasOne(tr => tr.Freelancer)
-                .WithMany()
-                .HasForeignKey(tr => tr.FreelancerId)
-                .OnDelete(DeleteBehavior.Restrict);
-
             base.OnModelCreating(modelBuilder);
+            modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
         }
     }
 }

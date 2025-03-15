@@ -1,16 +1,14 @@
-﻿using System;
+﻿using Core.Entities;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Core.Entities
+namespace Core.DTOs.Project
 {
-    public class Project
+    public class CreateProjectDTO
     {
-        public Guid Id { get; set; }
-        [Required]
         public Guid FreelancerId { get; set; }
         public string Name { get; set; }
         public string Client { get; set; }

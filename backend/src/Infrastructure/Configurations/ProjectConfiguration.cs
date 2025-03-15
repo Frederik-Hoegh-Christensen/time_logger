@@ -10,6 +10,8 @@ namespace Infrastructure.Configurations
         {
             builder.HasKey(p => p.Id);
 
+            
+
             builder.Property(p => p.Id)
                 .IsRequired()
                 .ValueGeneratedOnAdd();
@@ -28,6 +30,7 @@ namespace Infrastructure.Configurations
             builder.HasOne(p => p.Freelancer)
                 .WithMany(f => f.Projects)
                 .HasForeignKey(p => p.FreelancerId)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade); 
 
             builder.ToTable("Projects");
