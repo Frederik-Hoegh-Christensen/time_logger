@@ -16,7 +16,7 @@ namespace Tests.Infrastructure.Repositories
         public ProjectRepositoryTests()
         {
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlite("Filename=:memory:")  // SQLite enforces foreign keys
+                .UseSqlite("Filename=:memory:")
                 .Options;
             _dbContext = new ApplicationDbContext(options);
             _sut = new ProjectRepository(_dbContext);
@@ -59,6 +59,7 @@ namespace Tests.Infrastructure.Repositories
 
             // Assert
             Assert.Equal(3, _dbContext.Projects.Count());
+            Assert.Null(_dbContext.Projects.Where(p => p.Id == id).FirstOrDefault());
         }
 
         [Fact]
@@ -210,13 +211,54 @@ namespace Tests.Infrastructure.Repositories
             Assert.All(result, p => Assert.Equal(freelancerId, p.FreelancerId));
         }
 
+        
+        [Fact]
+        public void UpdateProject_WhenProjectExists_ShouldUpdateFields()
+        {
+            // Arrange
+            var project = _dbContext.Projects.FirstOrDefault();
+            var updatedProject = new Project
+            {
+                Name = "Updated Name",
+                Client = "Updated Client",
+                Deadline = DateTime.Now.AddMonths(6)
+            };
+
+            // Act
+            _sut.UpdateProject(project.Id, updatedProject);
+            var updatedEntity = _dbContext.Projects.FirstOrDefault(p => p.Id == project.Id);
+
+            // Assert
+            Assert.Equal(updatedProject.Name, updatedEntity.Name);
+            Assert.Equal(updatedProject.Client, updatedEntity.Client);
+            Assert.Equal(updatedProject.Deadline, updatedEntity.Deadline);
+        }
+
+        [Fact]
+        public void UpdateProject_WhenProjectDoesNotExist_ShouldDoNothing()
+        {
+            // Arrange
+            var nonExistentId = Guid.NewGuid();
+            var updatedProject = new Project
+            {
+                Name = "Non-Existent Update",
+                Client = "Client X",
+                Deadline = DateTime.Now.AddMonths(6)
+            };
+
+            // Act
+            _sut.UpdateProject(nonExistentId, updatedProject);
+
+            // Assert
+            Assert.Equal(4, _dbContext.Projects.Count());
+        }
+
         private void Seed4ProjectsAnd4FreelancersDb()
         {
             var freelancers = new List<Freelancer>
             {
                 new Freelancer
                 {
-                    Id = Guid.NewGuid(),
                     FirstName = "John",
                     LastName = "Doe",
                     Email = "john.doe@example.com",
@@ -225,7 +267,6 @@ namespace Tests.Infrastructure.Repositories
                 },
                 new Freelancer
                 {
-                    Id = Guid.NewGuid(),
                     FirstName = "Jane",
                     LastName = "Smith",
                     Email = "jane.smith@example.com",
@@ -234,7 +275,6 @@ namespace Tests.Infrastructure.Repositories
                 },
                 new Freelancer
                 {
-                    Id = Guid.NewGuid(),
                     FirstName = "Alice",
                     LastName = "Johnson",
                     Email = "alice.johnson@example.com",
@@ -243,7 +283,6 @@ namespace Tests.Infrastructure.Repositories
                 },
                 new Freelancer
                 {
-                    Id = Guid.NewGuid(),
                     FirstName = "Bob",
                     LastName = "Williams",
                     Email = "bob.williams@example.com",
@@ -255,34 +294,30 @@ namespace Tests.Infrastructure.Repositories
         {
             new Project
             {
-                Id = Guid.NewGuid(),
                 FreelancerId = freelancers[0].Id,
                 Name = "Project Alpha",
                 Client = "Client A",
                 Deadline = DateTime.Now.AddMonths(2),
-                Freelancer = freelancers[0] 
+                Freelancer = freelancers[0]
             },
             new Project
             {
-                Id = Guid.NewGuid(),
                 FreelancerId = freelancers[1].Id,
                 Name = "Project Beta",
                 Client = "Client B",
                 Deadline = DateTime.Now.AddMonths(3),
-                Freelancer = freelancers[1] 
+                Freelancer = freelancers[1]
             },
             new Project
             {
-                Id = Guid.NewGuid(),
                 FreelancerId = freelancers[2].Id,
                 Name = "Project Gamma",
                 Client = "Client C",
                 Deadline = DateTime.Now.AddMonths(4),
-                Freelancer = freelancers[2] 
+                Freelancer = freelancers[2]
             },
             new Project
             {
-                Id = Guid.NewGuid(),
                 FreelancerId = freelancers[3].Id,
                 Name = "Project Delta",
                 Client = "Client D",
@@ -295,11 +330,11 @@ namespace Tests.Infrastructure.Repositories
             _dbContext.Projects.AddRange(projects);
             _dbContext.SaveChanges();
         }
+
         public void Dispose()
         {
             _dbContext.Database.EnsureDeleted();
             _dbContext.Dispose();
-
         }
     }
 }

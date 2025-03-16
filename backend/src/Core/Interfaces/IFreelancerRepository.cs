@@ -11,7 +11,7 @@ namespace Core.Interfaces
     {
         void CreateFreeLancer(Freelancer freelancer);
         void DeleteFreeLancer(Guid id);
-        void UpdateFreeLancer(Guid id);
-        void GetFreelancer(Guid id);
+        void UpdateFreeLancer(Guid id, Freelancer updatedFreelancer);
+        Freelancer? GetFreelancer(Guid id);
     }
 }
