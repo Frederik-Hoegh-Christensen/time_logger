@@ -12,10 +12,14 @@ namespace Core.Entities
         public Guid Id { get; set; }
         [Required]
         public Guid FreelancerId { get; set; }
+        public Guid CustomerId { get; set; }
         public string Name { get; set; }
-        public string Client { get; set; }
         public DateTime Deadline { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public bool IsCompleted { get; set; } 
         public Freelancer Freelancer { get; set; }
+        public Customer Customer { get; set; }
         public ICollection<TimeRegistration> TimeRegistrations { get; set; }
+        
     }
 }

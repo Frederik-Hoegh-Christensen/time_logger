@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Core.DTOs.TimeRegistration;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,11 @@ namespace Core.Interfaces
 {
     public interface ITimeRegistrationRepository
     {
-        void CreateTimeRegistration(TimeRegistration timeRegistration);
-        void DeleteTimeRegistration(Guid id);
-        void UpdateTimeRegistration(Guid id);
-        void GetFreelancer(Guid id);
+        Task<Guid?> CreateTimeRegistrationAsync(TimeRegistrationCreateDTO timeRegistration);
+        Task<bool> DeleteTimeRegistrationAsync(Guid id);
+        Task<bool> UpdateTimeRegistrationAsync(Guid id, TimeRegistrationDTO updatedTimeRegistration);
+        Task<TimeRegistrationDTO?> GetTimeRegistrationAsync(Guid id);
+        Task <IList<TimeRegistrationDTO>> GetTimeRegistrationsForProjectAsync(Guid projectId);
+        Task<IList<TimeRegistrationDTO>> GetTimeRegistrationsByFreelancerIdAndDate(Guid freelancerId, DateOnly date);
     }
 }

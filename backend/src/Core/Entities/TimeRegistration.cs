@@ -10,9 +10,12 @@ namespace Core.Entities
     {
         public Guid Id { get; set; }
         public Guid ProjectId { get; set; }
+        public Project Project { get; set; }
         public Guid FreelancerId { get; set; }
         public DateOnly WorkDate { get; set; }
         public decimal HoursWorked { get; set; }
         public string Description { get; set; }
+        
+
     }
 }

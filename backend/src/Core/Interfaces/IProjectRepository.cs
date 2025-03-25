@@ -1,4 +1,6 @@
-﻿using Core.Entities;
+﻿using Core.DTOs.Project;
+using Core.DTOs.TimeRegistration;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,11 +11,12 @@ namespace Core.Interfaces
 {
     public interface IProjectRepository
     {
-        void CreateProject(Project project);
-        void DeleteProject(Guid id);
-        void UpdateProject(Guid id, Project updatedProject);
-        Project GetProject(Guid projectId, Guid FreelancerId);
-        ICollection<Project> GetProjectsByFreelancerId(Guid freelancerId);
+        Task<Guid?> CreateProjectAsync(ProjectCreateDTO project);
+        Task<bool> DeleteProjectAsync(Guid projectId);
+        Task<bool> UpdateProjectAsync(Guid projectId, ProjectDTO updatedProject);
+        Task<ProjectDTO?> GetProjectAsync(Guid projectId);
+        Task<ICollection<ProjectDTO>> GetProjectsByFreelancerIdAsync(Guid freelancerId);
+       
 
     }
 }

@@ -1,4 +1,5 @@
-﻿using Core.Entities;
+﻿using Core.DTOs.Freelancer;
+using Core.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,9 +10,9 @@ namespace Core.Interfaces
 {
     public interface IFreelancerRepository
     {
-        void CreateFreeLancer(Freelancer freelancer);
-        void DeleteFreeLancer(Guid id);
-        void UpdateFreeLancer(Guid id, Freelancer updatedFreelancer);
-        Freelancer? GetFreelancer(Guid id);
+        Task<Guid?> CreateFreelancerAsync(FreelancerCreateDTO freelancer, CancellationToken cancellationToken);
+        Task<bool> DeleteFreelancerAsync(Guid id);
+        Task<bool> UpdateFreelancerAsync(Guid id, FreelancerDTO updatedFreelancer);
+        Task<FreelancerDTO?> GetFreelancerAsync(Guid id);
     }
 }

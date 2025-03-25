@@ -10,17 +10,17 @@ namespace Infrastructure.Configurations
         {
             builder.HasKey(p => p.Id);
 
-            
-
             builder.Property(p => p.Id)
                 .IsRequired()
                 .ValueGeneratedOnAdd();
 
-            builder.Property(p => p.Name)
+            builder.HasOne(p => p.Customer)
+                .WithMany(c => c.Projects)
+                .HasForeignKey(p => p.CustomerId)
                 .IsRequired()
-                .HasMaxLength(200);
+                .OnDelete(DeleteBehavior.Cascade);
 
-            builder.Property(p => p.Client)
+            builder.Property(p => p.Name)
                 .IsRequired()
                 .HasMaxLength(200);
 
@@ -32,6 +32,10 @@ namespace Infrastructure.Configurations
                 .HasForeignKey(p => p.FreelancerId)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Cascade); 
+            builder.Property(p => p.CreatedAt)
+                .HasDefaultValueSql("GETUTCDATE()");
+            builder.Property(p => p.IsCompleted)
+                .IsRequired();
 
             builder.ToTable("Projects");
         }

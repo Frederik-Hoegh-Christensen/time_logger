@@ -1,4 +1,7 @@
-﻿using Core.Entities;
+﻿using Application.Mappings;
+using AutoMapper;
+using Core.DTOs.Project;
+using Core.Entities;
 using Infrastructure.Persistence.Contexts;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -12,112 +15,124 @@ namespace Tests.Infrastructure.Repositories
     {
         private readonly ProjectRepository _sut;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IMapper _mapper;
 
         public ProjectRepositoryTests()
         {
+            var config = new MapperConfiguration(cfg =>
+            {
+                // Add your AutoMapper profiles here (e.g. mapping between DTOs and entities)
+                cfg.AddProfile(new MappingProfile());
+            });
+            _mapper = config.CreateMapper();
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseSqlite("Filename=:memory:")
                 .Options;
             _dbContext = new ApplicationDbContext(options);
-            _sut = new ProjectRepository(_dbContext);
+            _sut = new ProjectRepository(_dbContext, _mapper);
             _dbContext.Database.OpenConnection(); 
             _dbContext.Database.EnsureCreated();
             Seed4ProjectsAnd4FreelancersDb();
         }
 
-        [Fact]
-        public void method()
-        {
-            // Arrange
 
-            // Act
-
-            // Assert
-        }
         [Fact]
-        public void Delete_WhenIdDoesNotExist_ShouldDoNothing()
+        public async Task Delete_WhenIdDoesNotExist_ShouldDoNothing()
         {
             // Arrange
             var id = Guid.NewGuid();
 
             // Act
-            _sut.DeleteProject(id);
+            await _sut.DeleteProjectAsync(id);
 
             // Assert
             Assert.Equal(4, _dbContext.Projects.Count());
         }
 
         [Fact]
-        public void Delete_WhenIdExist_ShouldDelete()
+        public async Task Delete_WhenIdExists_ShouldDelete()
         {
             // Arrange
-            var project = _dbContext.Projects.FirstOrDefault();
+            var project = await _dbContext.Projects.FirstOrDefaultAsync();
             var id = project.Id;
 
             // Act
-            _sut.DeleteProject(id);
+            await _sut.DeleteProjectAsync(id);
 
             // Assert
             Assert.Equal(3, _dbContext.Projects.Count());
-            Assert.Null(_dbContext.Projects.Where(p => p.Id == id).FirstOrDefault());
+            Assert.Null(await _dbContext.Projects.Where(p => p.Id == id).FirstOrDefaultAsync());
         }
 
         [Fact]
-        public void Create_WhenProjectIsValid_ShouldCreate()
+        public async Task Create_WhenProjectIsValid_ShouldCreate()
         {
             // Arrange
-            var freelancer = _dbContext.Freelancers.FirstOrDefault();
-            var project = new Project
+            var freelancer = await _dbContext.Freelancers.FirstOrDefaultAsync();
+            var customer = await _dbContext.Customers.FirstOrDefaultAsync();
+
+            var project = new ProjectCreateDTO
             {
                 FreelancerId = freelancer.Id,
                 Name = "Project Beta",
-                Client = "Client B",
+                CustomerId = customer.Id,
                 Deadline = DateTime.Now.AddMonths(3),
-                Freelancer = freelancer
             };
 
             // Act
-            _sut.CreateProject(project);
-
+            var projectId = await _sut.CreateProjectAsync(project);
+            var createdProject = _dbContext.Projects.First(p => p.Id == projectId);
             // Assert
-            Assert.Equal(5, _dbContext.Projects.Count());
+            Assert.NotNull(createdProject);
+            Assert.Equal(createdProject.FreelancerId, freelancer.Id);
+            Assert.Equal(createdProject.Name, project.Name);
+            Assert.Equal(createdProject.CustomerId, project.CustomerId);
+            Assert.Equal(createdProject.Deadline, project.Deadline);
         }
+
         [Fact]
-        public void Create_WhenProjectDoesNotHaveFreelancerId_ShouldThrowDbUpdateException()
+        public async Task Create_WhenProjectDoesNotHaveFreelancerId_ShouldThrowDbUpdateException()
         {
+            var customer = await _dbContext.Customers.FirstAsync();
+
             // Arrange
-            var project = new Project
+            var project = new ProjectCreateDTO
             {
                 Name = "Project Morty",
-                Client = "Client XX",
+                CustomerId = customer.Id,
                 Deadline = DateTime.Now.AddMonths(3),
             };
 
-            // Act/Assert
-            Assert.Throws<DbUpdateException>(() => _sut.CreateProject(project));
-
+            // Act
+            var created =  await _sut.CreateProjectAsync(project);
+            Assert.Null(created);
         }
 
         [Fact]
-        public void Create_WhenProjectIsNull_ShouldThrowDbUpdateException()
-        {
-            var freelancer = _dbContext.Freelancers.FirstOrDefault();
-            // Arrange
-            var project = new Project();
-
-            // Act/Assert
-            Assert.Throws<DbUpdateException>(() => _sut.CreateProject(project));
-        }
-
-        [Fact]
-        public void GetProject_WhenProjectExists_ReturnsProject()
+        public async Task Create_WhenProjectIsNull_ShouldThrowDbUpdateException()
         {
             // Arrange
-            var freelancerId = _dbContext.Freelancers.FirstOrDefault().Id;
-            var project = _dbContext.Projects.Where(p => p.FreelancerId == freelancerId).FirstOrDefault();
+            var project = new ProjectCreateDTO();
 
             // Act
-            var result = _sut.GetProject(project.Id, freelancerId);
+            var created = await _sut.CreateProjectAsync(project);
+
+            //Assert
+            Assert.Null(created);
+            Assert.Equal(4, _dbContext.Projects.Count());
+        }
+
+        [Fact]
+        public async Task GetProject_WhenProjectExists_ReturnsProject()
+        {
+            // Arrange
+            var freelancerId = (await _dbContext.Freelancers.FirstAsync()).Id;
+            var project = await _dbContext.Projects
+                .Where(p => p.FreelancerId == freelancerId)
+                .FirstOrDefaultAsync();
+
+            // Act
+            var result = await _sut.GetProjectAsync(project.Id);
 
             // Assert
             Assert.NotNull(result);
@@ -126,63 +141,43 @@ namespace Tests.Infrastructure.Repositories
         }
 
         [Fact]
-        public void GetProject_WhenProjectDoesNotExist_ReturnsNull()
+        public async Task GetProject_WhenProjectDoesNotExist_ReturnsNull()
         {
             // Arrange
             var projectId = Guid.NewGuid();
             var freelancerId = Guid.NewGuid();
 
             // Act
-            var result = _sut.GetProject(projectId, freelancerId);
+            var result = await _sut.GetProjectAsync(projectId);
 
             // Assert
             Assert.Null(result);
         }
 
-        [Fact]
-        public void GetProject_WhenFreelancerIdDoesNotMatch_ReturnsNull()
-        {
-            // Arrange
-            var project = _dbContext.Projects.FirstOrDefault();
-
-            // Act
-            var result = _sut.GetProject(project.Id, Guid.NewGuid()); // Mismatched FreelancerId
-
-            // Assert
-            Assert.Null(result);
-        }
 
         [Fact]
-        public void GetProjectsByFreelancerId_WhenFreelancerHasProjects_ReturnsProjects()
+        public async Task GetProjectsByFreelancerId_WhenFreelancerHasProjects_ReturnsProjects()
         {
             // Arrange
-            var freelancerId = _dbContext.Freelancers.FirstOrDefault().Id;
-            var projects = new List<Project>
-            {
-                new Project { FreelancerId = freelancerId, Name = "Project 1", Client = "Client A", Deadline = DateTime.Now.AddMonths(1) },
-                new Project { FreelancerId = freelancerId, Name = "Project 2", Client = "Client B", Deadline = DateTime.Now.AddMonths(2) }
-            };
-
-            _dbContext.Projects.AddRange(projects);
-            _dbContext.SaveChanges();
+            var freelancerId = (await _dbContext.Freelancers.FirstAsync()).Id;
 
             // Act
-            var result = _sut.GetProjectsByFreelancerId(freelancerId);
+            var result = await _sut.GetProjectsByFreelancerIdAsync(freelancerId);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
+            Assert.Equal(1, result.Count);
             Assert.All(result, p => Assert.Equal(freelancerId, p.FreelancerId));
         }
 
         [Fact]
-        public void GetProjectsByFreelancerId_WhenFreelancerHasNoProjects_ReturnsEmptyList()
+        public async Task GetProjectsByFreelancerId_WhenFreelancerHasNoProjects_ReturnsEmptyList()
         {
             // Arrange
             var freelancerId = Guid.NewGuid();
 
             // Act
-            var result = _sut.GetProjectsByFreelancerId(freelancerId);
+            var result = await _sut.GetProjectsByFreelancerIdAsync(freelancerId);
 
             // Assert
             Assert.NotNull(result);
@@ -190,64 +185,46 @@ namespace Tests.Infrastructure.Repositories
         }
 
         [Fact]
-        public void GetProjectsByFreelancerId_WhenMultipleFreelancersExist_ReturnsOnlyMatchingProjects()
+        public async Task UpdateProject_WhenProjectExists_ShouldUpdateFields()
         {
             // Arrange
-            var freelancerId = _dbContext.Freelancers.FirstOrDefault().Id;
-            var newProjects = new List<Project>
+            var customer = await _dbContext.Customers.FirstAsync();
+            var project = await _dbContext.Projects.FirstAsync();
+            var updatedProjectDTO = new ProjectDTO
             {
-                new Project(){Name = "abc", Client = "qwerty", Deadline = DateTime.Now, FreelancerId = freelancerId},
-                new Project(){Name = "cba", Client = "ytrewq", Deadline = DateTime.Now, FreelancerId = freelancerId}
-            };
-            _dbContext.Projects.AddRange(newProjects);
-            _dbContext.SaveChanges();
-
-            // Act
-            var result = _sut.GetProjectsByFreelancerId(freelancerId);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(3, result.Count);
-            Assert.All(result, p => Assert.Equal(freelancerId, p.FreelancerId));
-        }
-
-        
-        [Fact]
-        public void UpdateProject_WhenProjectExists_ShouldUpdateFields()
-        {
-            // Arrange
-            var project = _dbContext.Projects.FirstOrDefault();
-            var updatedProject = new Project
-            {
+                Id = project.Id,
+                FreelancerId = project.FreelancerId,
                 Name = "Updated Name",
-                Client = "Updated Client",
+                CustomerId = customer.Id,
+                CustomerName = customer.Name,
                 Deadline = DateTime.Now.AddMonths(6)
             };
 
             // Act
-            _sut.UpdateProject(project.Id, updatedProject);
-            var updatedEntity = _dbContext.Projects.FirstOrDefault(p => p.Id == project.Id);
-
+            var updated = await _sut.UpdateProjectAsync(project.Id, updatedProjectDTO);
+            var updatedProject = await _dbContext.Projects.FirstAsync(p => p.Id == project.Id);
             // Assert
-            Assert.Equal(updatedProject.Name, updatedEntity.Name);
-            Assert.Equal(updatedProject.Client, updatedEntity.Client);
-            Assert.Equal(updatedProject.Deadline, updatedEntity.Deadline);
+            Assert.True(updated);
+            Assert.Equal(updatedProject.Name, updatedProjectDTO.Name);
+            Assert.Equal(updatedProject.CustomerId, updatedProjectDTO.CustomerId);
+            Assert.Equal(updatedProject.Deadline, updatedProjectDTO.Deadline);
         }
 
         [Fact]
-        public void UpdateProject_WhenProjectDoesNotExist_ShouldDoNothing()
+        public async Task UpdateProject_WhenProjectDoesNotExist_ShouldDoNothing()
         {
             // Arrange
+            var customer = await _dbContext.Customers.FirstAsync();
             var nonExistentId = Guid.NewGuid();
-            var updatedProject = new Project
+            var updatedProject = new ProjectDTO
             {
                 Name = "Non-Existent Update",
-                Client = "Client X",
+                CustomerId = customer.Id,
                 Deadline = DateTime.Now.AddMonths(6)
             };
 
             // Act
-            _sut.UpdateProject(nonExistentId, updatedProject);
+            await _sut.UpdateProjectAsync(nonExistentId, updatedProject);
 
             // Assert
             Assert.Equal(4, _dbContext.Projects.Count());
@@ -290,13 +267,38 @@ namespace Tests.Infrastructure.Repositories
                     Projects = new List<Project>() // Add some sample projects here if needed
                 }
             };
+            var customers = new List<Customer>
+            {
+                new Customer
+                {
+                    Name = "CustomerOne",
+                    Email = "CustomerOne@gmail.com"
+                },
+                new Customer
+                {
+                    Name = "CustomerTwo",
+                    Email = "CustomerTwo@gmail.com"
+                },
+                new Customer
+                {
+                    Name = "CustomerThree",
+                    Email = "CustomerThree@gmail.com"
+                },
+                new Customer
+                {
+                    Name = "CustomerFour",
+                    Email = "CustomerFour@gmail.com"
+                },
+            };
+            _dbContext.Customers.AddRange(customers);
+            _dbContext.SaveChanges();
             var projects = new List<Project>
         {
             new Project
             {
                 FreelancerId = freelancers[0].Id,
                 Name = "Project Alpha",
-                Client = "Client A",
+                CustomerId = customers[0].Id,
                 Deadline = DateTime.Now.AddMonths(2),
                 Freelancer = freelancers[0]
             },
@@ -304,7 +306,7 @@ namespace Tests.Infrastructure.Repositories
             {
                 FreelancerId = freelancers[1].Id,
                 Name = "Project Beta",
-                Client = "Client B",
+                CustomerId = customers[1].Id,
                 Deadline = DateTime.Now.AddMonths(3),
                 Freelancer = freelancers[1]
             },
@@ -312,7 +314,7 @@ namespace Tests.Infrastructure.Repositories
             {
                 FreelancerId = freelancers[2].Id,
                 Name = "Project Gamma",
-                Client = "Client C",
+                CustomerId = customers[2].Id,
                 Deadline = DateTime.Now.AddMonths(4),
                 Freelancer = freelancers[2]
             },
@@ -320,7 +322,7 @@ namespace Tests.Infrastructure.Repositories
             {
                 FreelancerId = freelancers[3].Id,
                 Name = "Project Delta",
-                Client = "Client D",
+                CustomerId = customers[3].Id,
                 Deadline = DateTime.Now.AddMonths(5),
                 Freelancer = freelancers[3] // This links the freelancer to the project
             }

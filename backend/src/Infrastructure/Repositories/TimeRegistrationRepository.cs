@@ -1,33 +1,134 @@
-﻿using Core.Entities;
+﻿using AutoMapper;
+using Core.DTOs.TimeRegistration;
+using Core.Entities;
 using Core.Interfaces;
+using Infrastructure.Persistence.Contexts;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Infrastructure.Repositories
 {
-    internal class TimeRegistrationRepository : ITimeRegistrationRepository
+    public class TimeRegistrationRepository(ApplicationDbContext dbContext, IMapper mapper) : ITimeRegistrationRepository
     {
-        public void CreateTimeRegistration(TimeRegistration timeRegistration)
+        private readonly ApplicationDbContext _dbContext = dbContext;
+        private readonly IMapper _mapper = mapper;
+
+        public async Task<Guid?> CreateTimeRegistrationAsync(TimeRegistrationCreateDTO timeRegistrationDTO)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var timeRegistration = _mapper.Map<TimeRegistration>(timeRegistrationDTO);
+                if (timeRegistration == null)
+                    return null;
+
+                await _dbContext.TimeRegistrations.AddAsync(timeRegistration);
+                await _dbContext.SaveChangesAsync();
+                return timeRegistration.Id;
+            }
+            catch (Exception ex)
+            {
+                // Log the exception if logging is available
+                Console.WriteLine($"Error creating time registration: {ex.Message}");
+                return null;
+            }
         }
 
-        public void DeleteTimeRegistration(Guid id)
+        public async Task<bool> DeleteTimeRegistrationAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var timeRegistration = await _dbContext.TimeRegistrations.FirstOrDefaultAsync(tr => tr.Id == id);
+                if (timeRegistration == null)
+                    return false;
+
+                _dbContext.TimeRegistrations.Remove(timeRegistration);
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deleting time registration: {ex.Message}");
+                return false;
+            }
         }
 
-        public void GetFreelancer(Guid id)
+        public async Task<bool> UpdateTimeRegistrationAsync(Guid id, TimeRegistrationDTO updatedTimeRegistration)
         {
-            throw new NotImplementedException();
+            if (updatedTimeRegistration == null)
+                throw new ArgumentNullException(nameof(updatedTimeRegistration));
+
+            try
+            {
+                var existingTimeRegistration = await _dbContext.TimeRegistrations.FirstOrDefaultAsync(tr => tr.Id == id);
+                if (existingTimeRegistration == null)
+                    return false;
+
+                existingTimeRegistration.ProjectId = updatedTimeRegistration.ProjectId;
+                existingTimeRegistration.FreelancerId = updatedTimeRegistration.FreelancerId;
+                existingTimeRegistration.WorkDate = updatedTimeRegistration.WorkDate;
+                existingTimeRegistration.HoursWorked = updatedTimeRegistration.HoursWorked;
+                existingTimeRegistration.Description = updatedTimeRegistration.Description;
+
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error updating time registration: {ex.Message}");
+                return false;
+            }
         }
 
-        public void UpdateTimeRegistration(Guid id)
+        public async Task<TimeRegistrationDTO?> GetTimeRegistrationAsync(Guid id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var timeRegistration = await _dbContext.TimeRegistrations.FirstOrDefaultAsync(tr => tr.Id == id);
+                return _mapper.Map<TimeRegistrationDTO>(timeRegistration);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching time registration: {ex.Message}");
+                return null;
+            }
+        }
+
+        public async Task<IList<TimeRegistrationDTO>> GetTimeRegistrationsForProjectAsync(Guid projectId)
+        {
+            try
+            {
+                var timeRegistrations = await _dbContext.TimeRegistrations
+                    .Where(tr => tr.ProjectId == projectId)
+                    .ToListAsync();
+
+                return _mapper.Map<List<TimeRegistrationDTO>>(timeRegistrations) ?? new List<TimeRegistrationDTO>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching time registrations for project: {ex.Message}");
+                return new List<TimeRegistrationDTO>();
+            }
+        }
+
+        public async Task<IList<TimeRegistrationDTO>> GetTimeRegistrationsByFreelancerIdAndDate(Guid freelancerId, DateOnly date)
+        {
+            try
+            {
+                var timeRegistrations = await _dbContext.TimeRegistrations
+                    .Where(tr => tr.FreelancerId == freelancerId && tr.WorkDate == date)
+                    .Include(tr => tr.Project)
+                    .ToListAsync();
+
+                return _mapper.Map<List<TimeRegistrationDTO>>(timeRegistrations) ?? new List<TimeRegistrationDTO>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error fetching time registrations by freelancer and date: {ex.Message}");
+                return new List<TimeRegistrationDTO>();
+            }
         }
     }
 }

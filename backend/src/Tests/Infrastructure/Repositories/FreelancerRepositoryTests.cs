@@ -1,11 +1,13 @@
-﻿using Core.Entities;
+﻿using Application.Mappings;
+using AutoMapper;
+using Core.DTOs.Freelancer;
+using Core.Entities;
 using Infrastructure.Persistence.Contexts;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,123 +17,120 @@ namespace Tests.Infrastructure.Repositories
     {
         private readonly FreelancerRepository _sut;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IMapper _mapper;
 
         public FreelancerRepositoryTests()
         {
+            var config = new MapperConfiguration(cfg =>
+            {
+                // Add your AutoMapper profiles here (e.g. mapping between DTOs and entities)
+                cfg.AddProfile(new MappingProfile());
+            });
+            _mapper = config.CreateMapper();
             var options = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseSqlite("Filename=:memory:") 
+                .UseSqlite("Filename=:memory:")
                 .Options;
             _dbContext = new ApplicationDbContext(options);
-            _sut = new FreelancerRepository(_dbContext);
+            _sut = new FreelancerRepository(_dbContext, _mapper);
             _dbContext.Database.OpenConnection();
             _dbContext.Database.EnsureCreated();
-            Seed4FreelancersDb();
-        }
-        [Fact]
-        public void method()
-        {
-            // Arrange
-
-            // Act
-
-            // Assert
+            Seed4FreelancersDbAsync().Wait();
         }
 
         [Fact]
-        public void Get_WhenFreelancerExists_ShouldReturnFreelancer()
+        public async Task Get_WhenFreelancerExists_ShouldReturnFreelancer()
         {
             // Arrange
             var id = _dbContext.Freelancers.First().Id;
 
             // Act
-            var freelancer = _sut.GetFreelancer(id);
+            var freelancer = await _sut.GetFreelancerAsync(id);
 
             // Assert
             Assert.NotNull(freelancer);
         }
 
         [Fact]
-        public void Get_WhenFreelancerNotExists_ShouldReturnNull()
+        public async Task Get_WhenFreelancerNotExists_ShouldReturnNull()
         {
             // Arrange
             var id = Guid.NewGuid();
 
             // Act
-            var freelancer = _sut.GetFreelancer(id);
+            var freelancer = await _sut.GetFreelancerAsync(id);
 
             // Assert
             Assert.Null(freelancer);
         }
 
         [Fact]
-        public void Delete_WhenIdExist_ShouldDelete()
+        public async Task Delete_WhenIdExist_ShouldReturnTrue()
         {
             // Arrange
             var id = _dbContext.Freelancers.First().Id;
 
             // Act
-            _sut.DeleteFreeLancer(id);
+            var deleted = await _sut.DeleteFreelancerAsync(id);
 
             // Assert
-            Assert.Equal(3, _dbContext.Freelancers.Count());
-            Assert.Null(_dbContext.Freelancers.Where(f => f.Id == id).FirstOrDefault());
+            Assert.True(deleted);
+            Assert.Null(await _dbContext.Freelancers.Where(f => f.Id == id).FirstOrDefaultAsync());
         }
 
-
         [Fact]
-        public void Delete_WhenIdNotExist_ShouldDoNothing()
+        public async Task Delete_WhenIdNotExist_ShouldReturnFalse()
         {
             // Arrange
             var id = Guid.NewGuid();
 
             // Act
-            _sut.DeleteFreeLancer(id);
+            var deleted = await _sut.DeleteFreelancerAsync(id);
 
-            // Assert
-            Assert.Equal(4, _dbContext.Freelancers.Count());
+            //
+            Assert.False(deleted);
+            Assert.Equal(4, await _dbContext.Freelancers.CountAsync());
         }
-
 
         [Theory]
         [InlineData(null, "Doe", "Password123!", "test@example.com")] // Missing FirstName
         [InlineData("John", null, "Password123!", "test@example.com")] // Missing LastName
         [InlineData("John", "Doe", null, "test@example.com")] // Missing Password
         [InlineData("John", "Doe", "Password123!", null)] // Missing Email
-        public void Create_WhenMissingRequiredField_ShouldThrow(string firstName, string lastName, string password, string email)
+        public async Task Create_WhenMissingRequiredField_ShouldReturnNull(string firstName, string lastName, string password, string email)
         {
             var projects = new List<Project>();
             // Arrange
-            var freelancer = new Freelancer
+            var freelancer = new FreelancerCreateDTO
             {
                 FirstName = firstName,
                 LastName = lastName,
                 Password = password,
                 Email = email,
-                Projects = projects
             };
 
-            // Act & Assert
-            Assert.Throws<DbUpdateException>(() => _sut.CreateFreeLancer(freelancer));
+            // Act
+            var created = await _sut.CreateFreelancerAsync(freelancer, new CancellationToken());
+            // Assert
+            Assert.Null(created);
         }
 
         [Fact]
-        public void Create_WhenFreelancerIsValid_ShouldCreate()
+        public async Task Create_WhenFreelancerIsValid_ShouldCreateAndReturnId()
         {
             // Arrange
-            var freelancer = new Freelancer { Email = "Rick@Morty.com", FirstName = "Rick", LastName = "Morty", Password = "MyStrongPassw0rd!" };
+            var freelancer = new FreelancerCreateDTO { Email = "Rick@Morty.com", FirstName = "Rick", LastName = "Morty", Password = "MyStrongPassw0rd!" };
 
             // Act
-            _sut.CreateFreeLancer(freelancer);
-
+            var freelancerId = await _sut.CreateFreelancerAsync(freelancer, new CancellationToken());
+            var createdFreelancer = _dbContext.Freelancers.First(f => f.Id == freelancerId);
             // Assert
-            Assert.Equal(5, _dbContext.Freelancers.Count());
+            Assert.NotNull(createdFreelancer);
+            Assert.Equal(createdFreelancer.Email, freelancer.Email);
+            Assert.Equal(createdFreelancer.FirstName, freelancer.FirstName);
+            Assert.Equal(createdFreelancer.LastName, freelancer.LastName);
         }
 
-
-
-
-
-        private void Seed4FreelancersDb()
+        private async Task Seed4FreelancersDbAsync()
         {
             var freelancers = new List<Freelancer>
             {
@@ -141,7 +140,7 @@ namespace Tests.Infrastructure.Repositories
                     LastName = "Doe",
                     Email = "john.doe@example.com",
                     Password = "Password123",
-                    Projects = new List<Project>() // You can add some sample projects here if needed
+                    Projects = new List<Project>()
                 },
                 new Freelancer
                 {
@@ -149,7 +148,7 @@ namespace Tests.Infrastructure.Repositories
                     LastName = "Smith",
                     Email = "jane.smith@example.com",
                     Password = "Password456",
-                    Projects = new List<Project>() // Add some sample projects here if needed
+                    Projects = new List<Project>()
                 },
                 new Freelancer
                 {
@@ -157,7 +156,7 @@ namespace Tests.Infrastructure.Repositories
                     LastName = "Johnson",
                     Email = "alice.johnson@example.com",
                     Password = "Password789",
-                    Projects = new List<Project>() // Add some sample projects here if needed
+                    Projects = new List<Project>()
                 },
                 new Freelancer
                 {
@@ -165,12 +164,13 @@ namespace Tests.Infrastructure.Repositories
                     LastName = "Williams",
                     Email = "bob.williams@example.com",
                     Password = "Password101",
-                    Projects = new List<Project>() // Add some sample projects here if needed
+                    Projects = new List<Project>()
                 }
             };
-            _dbContext.Freelancers.AddRange(freelancers);
-            _dbContext.SaveChanges();
+            await _dbContext.Freelancers.AddRangeAsync(freelancers);
+            await _dbContext.SaveChangesAsync();
         }
+
         public void Dispose()
         {
             _dbContext.Database.EnsureDeleted();

@@ -25,23 +25,22 @@ namespace Infrastructure.Configurations
 
             builder.Property(tr => tr.HoursWorked)
                 .IsRequired()
-                .HasColumnType("decimal(5,2)"); // Allows up to 99.99 hours
+                .HasColumnType("decimal(5,2)"); 
 
             builder.Property(tr => tr.Description)
-                .HasMaxLength(500); // Optional, but limited to 500 characters
+                .HasMaxLength(500);
 
-            // Configure relationships
-            builder.HasOne<Project>()
+            builder.HasOne(tr => tr.Project)  // Specify the navigation property
                 .WithMany(p => p.TimeRegistrations)
                 .HasForeignKey(tr => tr.ProjectId)
-                .OnDelete(DeleteBehavior.Cascade); // Delete time registrations if the project is deleted
+                .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasOne<Freelancer>()
                 .WithMany()
                 .HasForeignKey(tr => tr.FreelancerId)
                 .OnDelete(DeleteBehavior.Restrict); // Prevent deletion of freelancers if there are time registrations
 
-            // Table name (optional)
+    
             builder.ToTable("TimeRegistrations");
         }
     }

@@ -16,6 +16,7 @@ namespace Infrastructure.Persistence.Contexts
         public DbSet<Freelancer> Freelancers { get; set; }
         public DbSet<Project> Projects { get; set; }
         public DbSet<TimeRegistration> TimeRegistrations { get; set; }
+        public DbSet<Customer> Customers { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
