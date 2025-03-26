@@ -22,7 +22,7 @@ npm install
 npm run dev
 
 ## Backend
-### Ensure the docker container with an sql server is running since migrations will be applied on app startup
+### Ensure the docker command succeeded since migrations will be applied onto the container on app startup
 cd ./backend/src/WebAPI
 
 dotnet build
