@@ -8,17 +8,19 @@ import CreateTimeRegistrationModal from "~/registerTime/components/createTimeReg
 import WeekView from "~/registerTime/components/WeekView.tsx";
 import type { TimeRegistrationDTO } from "~/models/timeRegistration";
 import NewEditModal from "~/sharedComponents/EditTimeRegistrationModal";
+import { freelancerService } from "~/api/freelancerService";
 
 //"DEA192EE-B1D0-43DA-0A7D-08DD6C71F515"
 
 export default function TimeRegistration(){
   const {setProjects} = useProjectContext();
   const {timeRegistrations, setTimeRegistrations, selectedDate, setSelectedDate} = useTimeRegistrationContext();
-  const {openEditTimeRegistrationModal, setOpenEditTimeRegistrationModal, selectedTimeRegistration} = useProjectContext();
+
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const projectsFromApi = await projectService.fetchProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515");
+        // const projectsFromApi = await projectService.fetchProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515");
+        const projectsFromApi = await freelancerService.getProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515");
         setProjects(projectsFromApi);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -33,11 +35,12 @@ export default function TimeRegistration(){
     if (!selectedDate) return;
     const fetchTimeRegistrations = async () => {
       try {
-        const timeRegistrationsFromApi = await timeRegistrationService.fetchTimeRegistrationsByFreelancerIdAndDate("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515", selectedDate!);
+        // const timeRegistrationsFromApi = await timeRegistrationService.fetchTimeRegistrationsByFreelancerIdAndDate("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515", selectedDate!);
+        const timeRegistrationsFromApi = await freelancerService.getTimeRegistrationsByFreelancerIdAndDate("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515", selectedDate.toISOString().split("T")[0]);
         setTimeRegistrations([...timeRegistrationsFromApi]);
       } catch (error) {
         setTimeRegistrations([]);
-        console.error("Error fetching projects:", error);
+        console.error("Error fetching time registrations:", error);
       }
     };
     fetchTimeRegistrations();

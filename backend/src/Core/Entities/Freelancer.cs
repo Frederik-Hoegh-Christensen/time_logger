@@ -15,6 +15,6 @@ namespace Core.Entities
         public string Password { get; set; }
         [EmailAddress]
         public string Email { get; set; }
-        public ICollection<Project> Projects { get; set; }
+        public IList<Project> Projects { get; set; }
     }
 }

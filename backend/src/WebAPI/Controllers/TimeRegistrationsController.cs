@@ -9,50 +9,17 @@ namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class TimeRegistrationController : ControllerBase
+    public class TimeRegistrationsController : ControllerBase
     {
         private readonly ITimeRegistrationService _timeRegistrationService;
 
-        public TimeRegistrationController(ITimeRegistrationService timeRegistrationService)
+        public TimeRegistrationsController(ITimeRegistrationService timeRegistrationService)
         {
             _timeRegistrationService = timeRegistrationService;
         }
 
-        [HttpGet("project/{projectId}")]
-        public async Task<ActionResult<IList<TimeRegistrationDTO>>> GetTimeRegistrationsForProject(Guid projectId)
-        {
-            // Retrieve the time registrations for the project using the service
-            var timeRegistrations = await _timeRegistrationService.GetTimeRegistrationsForProjectAsync(projectId);
+        
 
-            // Check if there are any time registrations returned
-            if (timeRegistrations == null || !timeRegistrations.Any())
-            {
-                // Return a NotFound response if no time registrations are found
-                return NotFound("No time registrations found for the specified project.");
-            }
-
-            // Return the time registrations as a response
-            return Ok(timeRegistrations);
-        }
-
-        [HttpGet("freelancer/{freelancerId}/date/{date}")]
-        public async Task<ActionResult<IList<TimeRegistrationDTO>>> GetTimeRegistrationsByFreelancerIdAndDate(Guid freelancerId, DateOnly date)
-        {
-            // Retrieve the time registrations for the project using the service
-            var timeRegistrations = await _timeRegistrationService.GetTimeRegistrationsByFreelancerIdAndDate(freelancerId, date);
-
-            // Check if there are any time registrations returned
-            if (timeRegistrations == null || !timeRegistrations.Any())
-            {
-                // Return a NotFound response if no time registrations are found
-                return NotFound("No time registrations found for the specified project.");
-            }
-
-            // Return the time registrations as a response
-            return Ok(timeRegistrations);
-        }
-
-        // GET api/timeregistrations/{timeRegistrationId}
         [HttpGet("{timeRegistrationId}")]
         public async Task<IActionResult> GetTimeRegistration(Guid timeRegistrationId)
         {
@@ -66,7 +33,6 @@ namespace WebAPI.Controllers
             return Ok(timeRegistrationDTO);
         }
 
-        // POST api/timeregistrations
         [HttpPost]
         public async Task<IActionResult> CreateTimeRegistration([FromBody] TimeRegistrationCreateDTO timeRegistrationCreateDTO)
         {
@@ -75,13 +41,12 @@ namespace WebAPI.Controllers
                 return BadRequest("Time registration cannot be null.");
             }
 
-            await _timeRegistrationService.CreateTimeRegistrationAsync(timeRegistrationCreateDTO);
+            var createdTimeRegistrationId = await _timeRegistrationService.CreateTimeRegistrationAsync(timeRegistrationCreateDTO);
 
-            return Ok();
-            //return CreatedAtAction(nameof(GetTimeRegistration), new { timeRegistrationId = timeRegistrationCreateDTO.Id }, timeRegistrationCreateDTO);
+            // Return 201 Created with the location of the new resource
+            return CreatedAtAction(nameof(GetTimeRegistration), new { timeRegistrationId = createdTimeRegistrationId }, createdTimeRegistrationId);
         }
 
-        // PUT api/timeregistrations/{timeRegistrationId}
         [HttpPut("{timeRegistrationId}")]
         public async Task<IActionResult> UpdateTimeRegistration(Guid timeRegistrationId, [FromBody] TimeRegistrationDTO updatedTimeRegistration)
         {
@@ -102,7 +67,6 @@ namespace WebAPI.Controllers
             return NoContent();
         }
 
-        // DELETE api/timeregistrations/{timeRegistrationId}
         [HttpDelete("{timeRegistrationId}")]
         public async Task<IActionResult> DeleteTimeRegistration(Guid timeRegistrationId)
         {

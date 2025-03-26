@@ -35,7 +35,7 @@ namespace Application.Services
             return project;
         }
 
-        public async Task<ICollection<ProjectDTO>> GetProjectsByFreelancerIdAsync(Guid freelancerId)
+        public async Task<IList<ProjectDTO>> GetProjectsByFreelancerIdAsync(Guid freelancerId)
         {
             var projects = await _projectRepository.GetProjectsByFreelancerIdAsync(freelancerId);
             return projects;

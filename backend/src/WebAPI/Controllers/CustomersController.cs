@@ -9,11 +9,11 @@ namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CustomerController(ICustomerService customerService) : ControllerBase
+    public class CustomersController(ICustomerService customerService) : ControllerBase
     {
         private readonly ICustomerService _customerService = customerService;
 
-        [HttpGet("get/{id}")]
+        [HttpGet("{id}")]
         public async Task<ActionResult<CustomerDTO>> GetCustomer(Guid id)
         {
             var customerDTO = await _customerService.GetCustomer(id);
@@ -24,27 +24,32 @@ namespace WebAPI.Controllers
             return Ok(customerDTO);
         }
 
-        [HttpPost("create")]
-        public async Task<ActionResult<Guid>> CreateCustomer([FromBody] CustomerCreateDTO customerDTO, CancellationToken cancellationToken)
+        [HttpPost]
+        public async Task<ActionResult<Guid>> CreateCustomer([FromBody] CustomerCreateDTO customerDTO)
         {
             if (customerDTO == null)
                 return BadRequest("Customer data is required");
 
             var customerId = await _customerService.CreateCustomer(customerDTO);
-            return Ok(customerId);
+
+            return CreatedAtAction(nameof(GetCustomer), new { id = customerId }, customerId);
         }
 
-        [HttpPut("update")]
-        public async Task<ActionResult> UpdateCustomer([FromBody] CustomerDTO customerDTO)
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult> UpdateCustomer(Guid id, [FromBody] CustomerDTO customerDTO)
         {
             if (customerDTO == null)
                 return BadRequest("Customer data is required");
+
+            if (id != customerDTO.Id) 
+                return BadRequest("Mismatched customer ID");
 
             await _customerService.UpdateCustomer(customerDTO);
             return NoContent();
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete]
         public async Task<ActionResult> DeleteCustomer(Guid id)
         {
             await _customerService.DeleteCustomer(id);

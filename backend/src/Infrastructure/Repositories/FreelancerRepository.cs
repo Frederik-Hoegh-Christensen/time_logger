@@ -13,7 +13,6 @@ namespace Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _dbContext = dbContext;
         private readonly IMapper _mapper = mapper;
-        private readonly ILogger<FreelancerRepository> _logger;
 
         public async Task<Guid?> CreateFreelancerAsync(FreelancerCreateDTO freelancerDTO, CancellationToken cancellationToken)
         {
@@ -26,7 +25,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to create freelancer.");
                 return null;
             }
         }
@@ -43,7 +41,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to fetch freelancer.");
                 return null;
             }
         }
@@ -55,7 +52,6 @@ namespace Infrastructure.Repositories
                 var freelancer = await _dbContext.Freelancers.FindAsync(id);
                 if (freelancer is null)
                 {
-                    //_logger.LogWarning("Freelancer not found: {FreelancerId}", id);
                     return false;
                 }
 
@@ -65,7 +61,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to update freelancer.");
                 return false;
             }
         }
@@ -77,7 +72,6 @@ namespace Infrastructure.Repositories
                 var freelancer = await _dbContext.Freelancers.FindAsync(id);
                 if (freelancer is null)
                 {
-                    //_logger.LogWarning("Freelancer not found: {FreelancerId}", id);
                     return false;
                 }
 
@@ -85,9 +79,8 @@ namespace Infrastructure.Repositories
                 await _dbContext.SaveChangesAsync();
                 return true;
             }
-            catch (Exception ex)
+            catch 
             {
-                //_logger.LogError(ex, "Failed to delete freelancer.");
                 return false;
             }
         }

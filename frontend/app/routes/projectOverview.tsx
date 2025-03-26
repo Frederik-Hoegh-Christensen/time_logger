@@ -5,6 +5,7 @@ import { useProjectContext } from "~/contexts/projectContext";
 import ProjectRow from "~/projectOverview/components/projectRow";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
+import { freelancerService } from "~/api/freelancerService";
 
 
 
@@ -13,16 +14,16 @@ export default function projectOverview() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const projectsFromApi = await projectService.fetchProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515");
+        const projectsFromApi = await freelancerService.getProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515");
         setProjects(projectsFromApi);
       } catch (error) {
-        console.error("Error fetching projects:", error);
+        console.error("Error fetching projects by freelancer id:", error);
       }
     };
     fetchProjects();
   }, []);
 
-
+  
   const sortProjectsAsc = () => {
     const sortedProjects = [...projects].sort((a, b) => {
       const dateA = new Date(a.deadline.replace(/(\d{4})\/(\d{2})\/(\d{2})/, "$1-$3-$2"));

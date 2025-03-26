@@ -19,7 +19,7 @@ namespace Core.Entities
         public bool IsCompleted { get; set; } 
         public Freelancer Freelancer { get; set; }
         public Customer Customer { get; set; }
-        public ICollection<TimeRegistration> TimeRegistrations { get; set; }
+        public IList<TimeRegistration> TimeRegistrations { get; set; }
         
     }
 }

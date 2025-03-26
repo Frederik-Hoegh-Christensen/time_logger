@@ -23,7 +23,6 @@ namespace Tests.Infrastructure.Repositories
         {
             var config = new MapperConfiguration(cfg =>
             {
-                // Add your AutoMapper profiles here (e.g. mapping between DTOs and entities)
                 cfg.AddProfile(new MappingProfile());
             });
             _mapper = config.CreateMapper();

@@ -29,7 +29,7 @@ const ProjectRow: React.FC<IProps> = ({ project}) => {
           setTimeRegistrations(projectsFromApi);
         } catch (error) {
           setTimeRegistrations([]);
-          console.error("Error fetching projects:", error);
+          console.error("Error fetching time registrations by project id:", error);
         }
       };
       fetchTimeRegistrations();

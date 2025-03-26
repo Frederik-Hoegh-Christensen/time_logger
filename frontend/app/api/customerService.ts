@@ -5,7 +5,7 @@ import { apiService } from "./apiService";
 
 export const customerService = {
   fetchCustomerByProjectId: async (projectId: string): Promise<CustomerDTO> => {
-    return await apiService.get<CustomerDTO>(`/customer/${projectId}`);
+    return await apiService.get<CustomerDTO>(`/customers${projectId}`);
   },
 
 //   fetchProjectsByFreelancerId: async (freelancerId: string): Promise<ProjectDTO[]> => {
@@ -13,7 +13,7 @@ export const customerService = {
 //   },
 
   createCustomer: async (customerCreateDTO: CustomerCreateDTO): Promise<string> => {
-    return await apiService.post('/customer/create', customerCreateDTO);
+    return await apiService.post('/customers', customerCreateDTO);
   },
 
 //   updateProject: async (projectId: string, updatedProject: ProjectDTO): Promise<void> => {

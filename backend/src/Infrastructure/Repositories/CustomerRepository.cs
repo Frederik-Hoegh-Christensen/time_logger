@@ -12,7 +12,6 @@ namespace Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _dbContext = dbContext;
         private readonly IMapper _mapper = mapper;
-        private readonly ILogger<CustomerRepository> _logger;
 
         public async Task<Guid?> CreateCustomer(CustomerCreateDTO customerCreateDTO)
         {
@@ -25,7 +24,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to create customer.");
                 return null;
             }
         }
@@ -42,7 +40,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to fetch customer.");
                 return null;
             }
         }
@@ -54,7 +51,6 @@ namespace Infrastructure.Repositories
                 var existingCustomer = await _dbContext.Customers.FindAsync(customerDTO.Id);
                 if (existingCustomer is null)
                 {
-                   // _logger.LogWarning("Customer not found: {CustomerId}", customerDTO.Id);
                     return false;
                 }
 
@@ -64,7 +60,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to update customer.");
                 return false;
             }
         }
@@ -76,7 +71,6 @@ namespace Infrastructure.Repositories
                 var customer = await _dbContext.Customers.FindAsync(customerId);
                 if (customer is null)
                 {
-                    //_logger.LogWarning("Customer not found: {CustomerId}", customerId);
                     return false;
                 }
 
@@ -86,7 +80,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to delete customer.");
                 return false;
             }
         }

@@ -14,6 +14,6 @@ namespace Application.Interfaces
         Task<bool> DeleteProjectAsync(Guid id);
         Task<bool> UpdateProjectAsync(Guid id, ProjectDTO updatedProjectDTO);
         Task<ProjectDTO?> GetProjectAsync(Guid projectId);
-        Task<ICollection<ProjectDTO>> GetProjectsByFreelancerIdAsync(Guid freelancerId);
+        Task<IList<ProjectDTO>> GetProjectsByFreelancerIdAsync(Guid freelancerId);
     }
 }

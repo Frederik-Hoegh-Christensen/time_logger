@@ -1,5 +1,7 @@
-﻿using Core.DTOs.Project;
-using Application.Interfaces;
+﻿using Application.Interfaces;
+using Application.Services;
+using Core.DTOs.Project;
+using Core.DTOs.TimeRegistration;
 using Core.Entities;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -11,16 +13,17 @@ namespace WebAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProjectController : ControllerBase
+    public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
+        private readonly ITimeRegistrationService _timeRegistrationService;
 
-        public ProjectController(IProjectService projectService)
+        public ProjectsController(IProjectService projectService, ITimeRegistrationService timeRegistrationService  )
         {
             _projectService = projectService;
+            _timeRegistrationService = timeRegistrationService;
         }
 
-        // GET api/projects/{projectId}
         [HttpGet("{projectId}")]
         public async Task<IActionResult> GetProject(Guid projectId)
         {
@@ -34,17 +37,17 @@ namespace WebAPI.Controllers
             return Ok(project);
         }
 
-        [HttpGet("freelancer/{freelancerId}")]
-        public async Task<IActionResult> GetProjectsByFreelancerId(Guid freelancerId)
+        [HttpGet("{projectId}/timeregistrations")]
+        public async Task<ActionResult<IList<TimeRegistrationDTO>>> GetTimeRegistrationsForProject(Guid projectId)
         {
-            var projects = await _projectService.GetProjectsByFreelancerIdAsync(freelancerId);
+            var timeRegistrations = await _timeRegistrationService.GetTimeRegistrationsForProjectAsync(projectId);
 
-            if (projects == null || projects.Count == 0)
+            if (timeRegistrations == null || !timeRegistrations.Any())
             {
-                return NotFound();
+                return NoContent();
             }
 
-            return Ok(projects);
+            return Ok(timeRegistrations);
         }
 
         [HttpPost]
@@ -55,10 +58,8 @@ namespace WebAPI.Controllers
                 return BadRequest("Project cannot be null.");
             }
 
-            await _projectService.CreateProjectAsync(project);
-
-            return Ok();
-            //return CreatedAtAction(nameof(GetProject), new { projectId = project.Id }, project);
+            var createdProjectId = await _projectService.CreateProjectAsync(project);
+            return CreatedAtAction(nameof(GetProject), new { projectId = createdProjectId }, createdProjectId);
         }
 
         [HttpPut("{projectId}")]

@@ -33,18 +33,36 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAnyOrigin", policy =>
     {
-        policy.AllowAnyOrigin()       // Allow any origin
-              .AllowAnyMethod()       // Allow any HTTP method (GET, POST, etc.)
-              .AllowAnyHeader();       // Allow any headers
+        policy.AllowAnyOrigin()     
+              .AllowAnyMethod()     
+              .AllowAnyHeader();     
     });
 });
 
 var app = builder.Build();
 
+
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    dbContext.Database.Migrate();
+
+    var freelancerId = Guid.Parse("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515"); 
+    var firstName = "John"; 
+    var lastName = "Doe"; 
+    var email = "john.doe@example.com"; 
+    var password = "hashedpassword";
+
+
+    var sql = @"INSERT INTO Freelancers (Id, FirstName, LastName, Email, Password) 
+                VALUES ({0}, {1}, {2}, {3}, {4})";
+
+    dbContext.Database.ExecuteSqlRaw(sql, freelancerId, firstName, lastName, email, password);
+}
+
 app.MapControllers();
 
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

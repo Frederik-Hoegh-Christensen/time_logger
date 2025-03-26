@@ -30,8 +30,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                // Log the exception if logging is available
-                Console.WriteLine($"Error creating time registration: {ex.Message}");
                 return null;
             }
         }
@@ -90,7 +88,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error fetching time registration: {ex.Message}");
                 return null;
             }
         }

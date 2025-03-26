@@ -13,7 +13,6 @@ namespace Infrastructure.Configurations
     {
         public void Configure(EntityTypeBuilder<TimeRegistration> builder)
         {
-            // Set primary key
             builder.HasKey(tr => tr.Id);
 
             builder.Property(tr => tr.Id)
@@ -30,7 +29,7 @@ namespace Infrastructure.Configurations
             builder.Property(tr => tr.Description)
                 .HasMaxLength(500);
 
-            builder.HasOne(tr => tr.Project)  // Specify the navigation property
+            builder.HasOne(tr => tr.Project)  
                 .WithMany(p => p.TimeRegistrations)
                 .HasForeignKey(tr => tr.ProjectId)
                 .OnDelete(DeleteBehavior.Cascade);
@@ -38,7 +37,7 @@ namespace Infrastructure.Configurations
             builder.HasOne<Freelancer>()
                 .WithMany()
                 .HasForeignKey(tr => tr.FreelancerId)
-                .OnDelete(DeleteBehavior.Restrict); // Prevent deletion of freelancers if there are time registrations
+                .OnDelete(DeleteBehavior.Restrict); 
 
     
             builder.ToTable("TimeRegistrations");

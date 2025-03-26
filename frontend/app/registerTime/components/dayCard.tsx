@@ -20,12 +20,9 @@ const DayCard: React.FC<DayCardProps> = ({ date, isSelected, onSelect }) => {
       }}
     >
       <div className={styles.date}>
-        {date.toDateString()}
+        <strong>{date.toDateString()}</strong>
       </div>
-      <div className={styles.hours} style={{ display: 'flex', flexDirection: 'column' }}>
-        <div>hours</div>
-        <div>minutes</div>
-      </div>
+      
     </div>
   );
 };

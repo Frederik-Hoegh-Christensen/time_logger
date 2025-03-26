@@ -19,8 +19,11 @@ import { projectService } from "~/api/projectService";
 import { customerService } from "~/api/customerService";
 import type { CustomerCreateDTO } from "~/models/customer";
 import type { ProjectCreateDTO } from "~/models/project";
+import { useProjectContext } from "~/contexts/projectContext";
+import { freelancerService } from "~/api/freelancerService";
 
 const CreateProjectModal = () => {
+  const {setProjects} = useProjectContext()
   const { open, onOpen, onClose } = useDisclosure();
   const [errors, setErrors] = useState<{name?: string, deadline?: string, customerName?: string, customerEmail?: string}>({});
   const [formData, setFormData] = useState({
@@ -73,6 +76,13 @@ const CreateProjectModal = () => {
       isCompleted: false
     }
     await projectService.createProject(project);
+    var projects = await freelancerService.getProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515")
+    setProjects(projects);
+    setFormData({
+      customerName: "",
+      customerEmail: "",
+      projectName: "",
+      projectDeadline: "",});
     onClose();
   };
   return (

@@ -16,7 +16,6 @@ namespace Infrastructure.Repositories
     {
         private readonly ApplicationDbContext _dbContext = dbContext;
         private readonly IMapper _mapper = mapper;
-        private readonly ILogger<ProjectRepository> _logger;
 
         public async Task<Guid?> CreateProjectAsync(ProjectCreateDTO projectDTO)
         {
@@ -27,9 +26,8 @@ namespace Infrastructure.Repositories
                 await _dbContext.SaveChangesAsync();
                 return project.Id;
             }
-            catch (Exception ex)
+            catch
             {
-                //_logger.LogError(ex, "Failed to create project.");
                 return null;
             }
         }
@@ -40,19 +38,18 @@ namespace Infrastructure.Repositories
             {
                 var project = await _dbContext.Projects
                     .AsNoTracking()
-                    .Include(p => p.Customer) // Ensuring Customer details are included
+                    .Include(p => p.Customer) 
                     .FirstOrDefaultAsync(p => p.Id == projectId);
 
                 return project is not null ? _mapper.Map<ProjectDTO>(project) : null;
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to fetch project.");
                 return null;
             }
         }
 
-        public async Task<ICollection<ProjectDTO>> GetProjectsByFreelancerIdAsync(Guid freelancerId)
+        public async Task<IList<ProjectDTO>> GetProjectsByFreelancerIdAsync(Guid freelancerId)
         {
             try
             {
@@ -66,7 +63,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to fetch projects for freelancer {FreelancerId}", freelancerId);
                 return [];
             }
         }
@@ -78,7 +74,6 @@ namespace Infrastructure.Repositories
                 var project = await _dbContext.Projects.FirstOrDefaultAsync(p => p.Id == projectId);
                 if (project is null)
                 {
-                    //_logger.LogWarning("Project not found: {ProjectId}", projectId);
                     return false;
                 }
 
@@ -88,7 +83,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to update project.");
                 return false;
             }
         }
@@ -100,7 +94,6 @@ namespace Infrastructure.Repositories
                 var project = await _dbContext.Projects.FindAsync(projectId);
                 if (project is null)
                 {
-                    //_logger.LogWarning("Project not found: {ProjectId}", projectId);
                     return false;
                 }
 
@@ -110,7 +103,6 @@ namespace Infrastructure.Repositories
             }
             catch (Exception ex)
             {
-                //_logger.LogError(ex, "Failed to delete project.");
                 return false;
             }
         }
