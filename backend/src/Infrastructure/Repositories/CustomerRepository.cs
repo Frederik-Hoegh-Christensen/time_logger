@@ -22,7 +22,7 @@ namespace Infrastructure.Repositories
                 await _dbContext.SaveChangesAsync();
                 return customer.Id;
             }
-            catch (Exception ex)
+            catch 
             {
                 return null;
             }
@@ -38,7 +38,7 @@ namespace Infrastructure.Repositories
 
                 return _mapper.Map<CustomerDTO>(customer);
             }
-            catch (Exception ex)
+            catch
             {
                 return null;
             }
@@ -58,7 +58,7 @@ namespace Infrastructure.Repositories
                 await _dbContext.SaveChangesAsync();
                 return true;
             }
-            catch (Exception ex)
+            catch 
             {
                 return false;
             }
@@ -78,7 +78,7 @@ namespace Infrastructure.Repositories
                 await _dbContext.SaveChangesAsync();
                 return true;
             }
-            catch (Exception ex)
+            catch
             {
                 return false;
             }

@@ -23,7 +23,7 @@ namespace Infrastructure.Repositories
                 await _dbContext.SaveChangesAsync(cancellationToken);
                 return freelancer.Id;
             }
-            catch (Exception ex)
+            catch 
             {
                 return null;
             }
@@ -39,7 +39,7 @@ namespace Infrastructure.Repositories
 
                 return freelancer is not null ? _mapper.Map<FreelancerDTO>(freelancer) : null;
             }
-            catch (Exception ex)
+            catch 
             {
                 return null;
             }
@@ -59,7 +59,7 @@ namespace Infrastructure.Repositories
                 await _dbContext.SaveChangesAsync();
                 return true;
             }
-            catch (Exception ex)
+            catch 
             {
                 return false;
             }
