@@ -17,7 +17,6 @@ namespace Application.Services
             var customerId = await _customerRepository.CreateCustomer(customerCreateDTO);
             if (customerId == null)
             {
-                //TODO what then
                 return null;
             }
             return customerId;
@@ -28,7 +27,7 @@ namespace Application.Services
             await _customerRepository.DeleteCustomer(customerId);
         }
 
-        public async Task<CustomerDTO> GetCustomer(Guid customerId)
+        public async Task<CustomerDTO?> GetCustomer(Guid customerId)
         {
             return await _customerRepository.GetCustomer(customerId);
         }

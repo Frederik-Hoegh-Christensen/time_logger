@@ -91,7 +91,7 @@ namespace Tests.Infrastructure.Repositories
         }
 
         [Fact]
-        public async Task Create_WhenProjectDoesNotHaveFreelancerId_ShouldThrowDbUpdateException()
+        public async Task Create_WhenProjectDoesNotHaveFreelancerId_ShouldReturnNull()
         {
             var customer = await _dbContext.Customers.FirstAsync();
 
@@ -109,7 +109,7 @@ namespace Tests.Infrastructure.Repositories
         }
 
         [Fact]
-        public async Task Create_WhenProjectIsNull_ShouldThrowDbUpdateException()
+        public async Task Create_WhenProjectIsNull_ShouldReturnNull()
         {
             // Arrange
             var project = new ProjectCreateDTO();

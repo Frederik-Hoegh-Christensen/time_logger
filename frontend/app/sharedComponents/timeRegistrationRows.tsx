@@ -4,25 +4,21 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import ActionConfirmationDialog from "./ActionConfirmationDialog";
-import NewEditModal from "./NewEditModal";
+import NewEditModal from "./EditTimeRegistrationModal";
 
 interface IProps {
   timeRegistrations: TimeRegistrationDTO[];
-  onEdit: () => void;
+  onConfirmEdit: () => void
   onDelete: (timeRegistrationId: string) => Promise<void>;
 }
 
-const TimeRegistrationRows: React.FC<IProps> = ({ timeRegistrations, onEdit, onDelete }) => {
+const TimeRegistrationRows: React.FC<IProps> = ({ timeRegistrations, onDelete, onConfirmEdit }) => {
   const [dialogOpenId, setDialogOpenId] = useState<string | null>(null);
   const [openEditModalId, setOpenEditModalId] = useState<string | null>(null);
 
   const handleDeleteClick = (timeRegistrationId: string) => {
     setDialogOpenId(timeRegistrationId);
   };
-
-  const handleEditClick = (timeRegistrationId: string) => {
-    setOpenEditModalId(timeRegistrationId)
-  }
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "3px", marginBottom: 10 }}>
@@ -71,7 +67,7 @@ const TimeRegistrationRows: React.FC<IProps> = ({ timeRegistrations, onEdit, onD
               setDialogOpenId(null);
             }}
           />
-          <NewEditModal timeRegistration={entry} onConfirm={onEdit} onClose={() => console.log("")} open={openEditModalId === entry.id}/>
+          <NewEditModal timeRegistration={entry} onConfirm={() => {onConfirmEdit(); setOpenEditModalId(null);} } onClose={() => setOpenEditModalId(null)} open={openEditModalId === entry.id}/>
         </div>
       ))}
     </div>

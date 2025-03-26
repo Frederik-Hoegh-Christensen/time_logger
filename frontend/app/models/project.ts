@@ -13,9 +13,9 @@ export interface ProjectCreateDTO {
     id: string; 
     freelancerId: string;
     name: string;
-    client: string;
     deadline: string;
     customerName: string;
     isCompleted: boolean;
+    customerId: string
   }
   

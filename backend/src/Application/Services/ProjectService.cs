@@ -15,9 +15,9 @@ namespace Application.Services
         private readonly IProjectRepository _projectRepository = projectRepository;
         public async Task<Guid?> CreateProjectAsync(ProjectCreateDTO projectDTO)
         {
-            if (projectDTO.Deadline < (DateTime.UtcNow))
+            if (projectDTO.Deadline < DateTime.Today)
             {
-                throw new ArgumentException("The project deadline cannot be in the past.");
+                return null;
             }
             var id = await _projectRepository.CreateProjectAsync(projectDTO);
             return id;
@@ -43,17 +43,15 @@ namespace Application.Services
 
         public async Task<bool> UpdateProjectAsync(Guid projectId, ProjectDTO updatedProject)
         {
-            if (updatedProject.Deadline < (DateTime.UtcNow))
+            if (updatedProject.Deadline < (DateTime.Today))
             {
                 return false;
-                throw new ArgumentException("The project deadline cannot be in the past.");
             }
 
             var project = await _projectRepository.GetProjectAsync(projectId);
             if (project == null)
             {
                 return false;
-                throw new ArgumentException("Project does not exist.");
 
             }
             var updated = await _projectRepository.UpdateProjectAsync(projectId, updatedProject);

@@ -12,13 +12,13 @@ namespace Core.DTOs.Freelancer
     public class FreelancerCreateDTO
     {
         [JsonPropertyName("firstName")]
-        public string FirstName { get; set; }
+        public required string FirstName { get; set; }
         [JsonPropertyName("lastName")]
-        public string LastName { get; set; }
+        public required string LastName { get; set; }
         [JsonPropertyName("password")]
-        public string Password { get; set; }
+        public required string Password { get; set; }
         [JsonPropertyName("email")]
         [EmailAddress]
-        public string Email { get; set; }
+        public required string Email { get; set; }
     }
 }

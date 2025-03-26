@@ -13,9 +13,9 @@ namespace Application.Interfaces
     public interface IFreelancerService
     {
         Task UpdateFreelancer(Guid freelancerId, FreelancerDTO freelancerDTO);
-        Task CreateFreelancer(FreelancerCreateDTO freelancerDTO, CancellationToken cancellationToken);
+        Task<Guid?> CreateFreelancer(FreelancerCreateDTO freelancerDTO, CancellationToken cancellationToken);
         Task DeleteFreelancer(Guid freelancerId);
-        Task<FreelancerDTO> GetFreelancer(Guid freelancerId);
+        Task<FreelancerDTO?> GetFreelancer(Guid freelancerId);
 
     }
 }

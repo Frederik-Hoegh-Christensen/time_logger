@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, type FC } from "react";
 import {Modal,
     ModalOverlay,
     ModalContent,
@@ -18,15 +18,22 @@ import {
 import { projectService } from "~/api/projectService";
 import { customerService } from "~/api/customerService";
 import type { CustomerCreateDTO } from "~/models/customer";
-import type { ProjectCreateDTO } from "~/models/project";
+import type { ProjectCreateDTO, ProjectDTO } from "~/models/project";
 
-const CreateProjectModal = () => {
-  const { open, onOpen, onClose } = useDisclosure();
+interface IProps {
+    project: ProjectDTO
+    open: boolean
+    onClose: () => void;
+    onConfirm: (project: ProjectDTO) => void;
+}
+
+const EditProjectModal: FC<IProps> = ({project, open, onClose, onConfirm}) => {
+  const [errors, setErrors] = useState<{ deadline?: string}>({});
+  const formatDate = (date: string) => new Date(date).toISOString().split('T')[0];
   const [formData, setFormData] = useState({
-    customerName: "",
-    customerEmail: "",
-    projectName: "",
-    projectDeadline: "",
+    projectName: project.name,
+    projectDeadline: formatDate(project.deadline),
+    isCompleted: project.isCompleted
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,31 +43,40 @@ const CreateProjectModal = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const customer: CustomerCreateDTO = {name: formData.customerName, email: formData.customerEmail} 
-    const customerId = await customerService.createCustomer(
-      customer
-    )
-    const project: ProjectCreateDTO = {
+
+  const today = new Date().toISOString().split("T")[0];
+
+  // Check if the project deadline is before today
+  if (formData.projectDeadline < today || formData.projectDeadline === "") {
+    setErrors({ deadline: "Choose a deadline that is not in the past" });
+    return;
+  }
+
+    const updatedProject: ProjectDTO = {
+      id: project.id,
       name: formData.projectName,
       deadline: formData.projectDeadline,
       freelancerId: "DEA192EE-B1D0-43DA-0A7D-08DD6C71F515",
-      customerId: customerId,
-      isCompleted: false
+      customerId: project.customerId,
+      customerName: project.customerName,
+      isCompleted: formData.isCompleted
     }
-    await projectService.createProject(project);
-    onClose();
+    await projectService.updateProject(updatedProject.id, updatedProject);
+    onConfirm(updatedProject);
   };
+  const handleClose = () => {
+    onClose();
+    setErrors({})
+  }
   return (
     <>
-      <Button style={{marginLeft: 10}} onClick={onOpen}>Create new project</Button>
-
-      <Modal isOpen={open} onClose={onClose} isCentered>
+      <Modal isOpen={open} onClose={handleClose} isCentered>
         <ModalOverlay
           bg="rgba(0, 0, 0, 0.1)" // Semi-transparent dark overlay
           backdropFilter="blur(2px)" // Blurs the background
         />
         <ModalContent mx='auto' my='300' width={600} backgroundColor='#ffffff' borderRadius={8} padding={10}>
-          <ModalHeader mx='auto' mb={10}><strong>Create new project</strong> </ModalHeader>
+          <ModalHeader mx='auto' mb={10}><strong>Edit project</strong> </ModalHeader>
           <ModalBody mx='auto'>
           <form onSubmit={handleSubmit} style={{ display: "flex" }}>
                 {/* Project Form (Left Side) */}
@@ -77,7 +93,7 @@ const CreateProjectModal = () => {
                     />
                   </FormControl>
 
-                  <FormControl mb={4}>
+                  <FormControl mb={4} isInvalid={!!errors.deadline} isRequired>
                     <FormLabel htmlFor="projectDeadline">Project Deadline</FormLabel>
                     <Input
                       required
@@ -87,32 +103,22 @@ const CreateProjectModal = () => {
                       value={formData.projectDeadline}
                       onChange={handleInputChange}
                     />
+                    <FormErrorMessage textColor='red'>{errors.deadline}</FormErrorMessage>
                   </FormControl>
                 </div>
 
                 {/* Customer Form (Right Side) */}
                 <div style={{ flex: 1 }}>
-                  <FormControl mb={4}>
-                    <FormLabel htmlFor="customerName">Customer Name</FormLabel>
-                    <Input
-                      required
-                      id="customerName"
-                      name="customerName"
-                      value={formData.customerName}
-                      onChange={handleInputChange}
-                      placeholder="Enter customer name"
-                    />
-                  </FormControl>
-
-                  <FormControl mb={4}>
-                    <FormLabel htmlFor="customerEmail">Customer Email</FormLabel>
-                    <Input
-                      required
-                      id="customerEmail"
-                      name="customerEmail"
-                      value={formData.customerEmail}
-                      onChange={handleInputChange}
-                      placeholder="Enter customer email"
+                  <FormControl mb={4} display="flex" alignItems="center">
+                    <FormLabel htmlFor="isCompleted" mb="0">
+                        Completed
+                    </FormLabel>
+                    <input
+                        id="isCompleted"
+                        name="isCompleted"
+                        type="checkbox"
+                        checked={formData.isCompleted}
+                        onChange={(e) => setFormData({ ...formData, isCompleted: e.target.checked })}
                     />
                   </FormControl>
                 </div>
@@ -121,9 +127,9 @@ const CreateProjectModal = () => {
 
           <ModalFooter mx='auto'>
               <Button bgColor={"green"} mr={3} type="submit" onClick={handleSubmit}>
-                Create
+                Update
               </Button>
-              <Button bgColor={"red"} onClick={onClose}>
+              <Button bgColor={"red"} onClick={handleClose}>
                 Close
               </Button>
             </ModalFooter>
@@ -133,4 +139,4 @@ const CreateProjectModal = () => {
   );
 };
 
-export default CreateProjectModal;
+export default EditProjectModal;

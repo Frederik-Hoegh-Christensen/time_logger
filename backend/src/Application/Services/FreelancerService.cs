@@ -14,15 +14,14 @@ namespace Application.Services
     {
         private readonly IFreelancerRepository _freelancerRepository = freelancerRepository;
 
-        public async Task CreateFreelancer(FreelancerCreateDTO freelancerDTO, CancellationToken cancellationToken)
+        public async Task<Guid?> CreateFreelancer(FreelancerCreateDTO freelancerDTO, CancellationToken cancellationToken)
         {
             var id = await _freelancerRepository.CreateFreelancerAsync(freelancerDTO, cancellationToken);
             if (id == null)
             {
-
+                return null;
             }
-            //TODO what here
-            return;
+            return id;
         }
 
         public async Task DeleteFreelancer(Guid freelancerId)
@@ -30,9 +29,13 @@ namespace Application.Services
             await _freelancerRepository.DeleteFreelancerAsync(freelancerId);
         }
 
-        public async Task<FreelancerDTO> GetFreelancer(Guid freelancerId)
+        public async Task<FreelancerDTO?> GetFreelancer(Guid freelancerId)
         {
             var freelancer = await _freelancerRepository.GetFreelancerAsync(freelancerId);
+            if (freelancer == null)
+            {
+                return null;
+            }
             return freelancer;
         }
 

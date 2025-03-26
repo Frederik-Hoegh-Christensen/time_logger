@@ -25,7 +25,7 @@ const CreateTimeRegistrationModal = ({timeRegistration} : CreateTimeRegistration
   const {projects, setSelectedProject, selectedProject} = useProjectContext();
   const [errors, setErrors] = useState<{ hoursWorked?: string, projectId?: string }>({});
   const [formData, setFormData] = useState({
-    freelancerId: "5088F034-274E-412B-2394-08DD648C3E34", // Static for now
+    freelancerId: "DEA192EE-B1D0-43DA-0A7D-08DD6C71F515", // Static for now
     hoursWorked: "",
     description: "",
     projectId: ""
@@ -68,7 +68,7 @@ const CreateTimeRegistrationModal = ({timeRegistration} : CreateTimeRegistration
     onClose()
     setErrors({});
     setFormData({
-      freelancerId: "5088F034-274E-412B-2394-08DD648C3E34", // Static for now
+      freelancerId: "DEA192EE-B1D0-43DA-0A7D-08DD6C71F515", // Static for now
       hoursWorked: "",
       description: "",
       projectId: ""

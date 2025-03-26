@@ -10,7 +10,7 @@ const customStyles = {
 };
 
 interface IProps {
-  projects: ProjectDTO[]; // Assuming projects have an `id` and `name`
+  projects: ProjectDTO[];
   selectedProject: ProjectDTO | null;
   onProjectSelect: (project: ProjectDTO) => void;
 }

@@ -58,17 +58,16 @@ namespace Infrastructure.Repositories
         public async Task<bool> UpdateTimeRegistrationAsync(Guid id, TimeRegistrationDTO updatedTimeRegistration)
         {
             if (updatedTimeRegistration == null)
-                throw new ArgumentNullException(nameof(updatedTimeRegistration));
+                return false;
 
             try
             {
                 var existingTimeRegistration = await _dbContext.TimeRegistrations.FirstOrDefaultAsync(tr => tr.Id == id);
                 if (existingTimeRegistration == null)
+                {
                     return false;
-
-                existingTimeRegistration.ProjectId = updatedTimeRegistration.ProjectId;
-                existingTimeRegistration.FreelancerId = updatedTimeRegistration.FreelancerId;
-                existingTimeRegistration.WorkDate = updatedTimeRegistration.WorkDate;
+                }
+                   
                 existingTimeRegistration.HoursWorked = updatedTimeRegistration.HoursWorked;
                 existingTimeRegistration.Description = updatedTimeRegistration.Description;
 

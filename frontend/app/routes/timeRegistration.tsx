@@ -6,11 +6,10 @@ import { TimeRegistrationProvider, useTimeRegistrationContext } from "~/contexts
 import TimeRegistrationRows from "~/sharedComponents/timeRegistrationRows";
 import CreateTimeRegistrationModal from "~/registerTime/components/createTimeRegistrationModal";
 import WeekView from "~/registerTime/components/WeekView.tsx";
-import EditTimeRegistrationModal from "~/sharedComponents/EditTimeRegistrationModal";
 import type { TimeRegistrationDTO } from "~/models/timeRegistration";
-import NewEditModal from "~/sharedComponents/NewEditModal";
+import NewEditModal from "~/sharedComponents/EditTimeRegistrationModal";
 
-//"5088F034-274E-412B-2394-08DD648C3E34"
+//"DEA192EE-B1D0-43DA-0A7D-08DD6C71F515"
 
 export default function TimeRegistration(){
   const {setProjects} = useProjectContext();
@@ -19,7 +18,7 @@ export default function TimeRegistration(){
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const projectsFromApi = await projectService.fetchProjectsByFreelancerId("5088F034-274E-412B-2394-08DD648C3E34");
+        const projectsFromApi = await projectService.fetchProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515");
         setProjects(projectsFromApi);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -34,7 +33,7 @@ export default function TimeRegistration(){
     if (!selectedDate) return;
     const fetchTimeRegistrations = async () => {
       try {
-        const timeRegistrationsFromApi = await timeRegistrationService.fetchTimeRegistrationsByFreelancerIdAndDate("5088F034-274E-412B-2394-08DD648C3E34", selectedDate!);
+        const timeRegistrationsFromApi = await timeRegistrationService.fetchTimeRegistrationsByFreelancerIdAndDate("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515", selectedDate!);
         setTimeRegistrations([...timeRegistrationsFromApi]);
       } catch (error) {
         setTimeRegistrations([]);
@@ -44,7 +43,7 @@ export default function TimeRegistration(){
     fetchTimeRegistrations();
   }, [selectedDate]);
 
-  const handleEdit = () => {
+  const handleConfirmEdit = () => {
     setSelectedDate(new Date(selectedDate!))
   };
 
@@ -60,7 +59,7 @@ export default function TimeRegistration(){
               <CreateTimeRegistrationModal timeRegistration={undefined}/>
           )}
           {timeRegistrations &&
-              <TimeRegistrationRows onDelete={handleDelete} onEdit={handleEdit} timeRegistrations={timeRegistrations!}></TimeRegistrationRows>
+              <TimeRegistrationRows onDelete={handleDelete} onConfirmEdit={handleConfirmEdit} timeRegistrations={timeRegistrations!}></TimeRegistrationRows>
           }
           
       </div>    

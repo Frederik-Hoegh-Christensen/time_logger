@@ -13,7 +13,7 @@ namespace Tests.Application.Services
 {
     public class TimeRegistrationServiceTests
     {
-        private readonly TimeRegistrationService _timeRegistrationService;
+        private readonly TimeRegistrationService _sut;
         private readonly Mock<IProjectService> _mockProjectService;
         private readonly Mock<ITimeRegistrationRepository> _mockTimeRegistrationRepository;
 
@@ -21,7 +21,7 @@ namespace Tests.Application.Services
         {
             _mockProjectService = new Mock<IProjectService>();
             _mockTimeRegistrationRepository = new Mock<ITimeRegistrationRepository>();
-            _timeRegistrationService = new TimeRegistrationService(_mockProjectService.Object, _mockTimeRegistrationRepository.Object);
+            _sut = new TimeRegistrationService(_mockProjectService.Object, _mockTimeRegistrationRepository.Object);
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Tests.Application.Services
             var timeRegistrationDTO = new TimeRegistrationCreateDTO { HoursWorked = 0.4m };
 
             //Act
-            var created = await _timeRegistrationService.CreateTimeRegistrationAsync(timeRegistrationDTO);
+            var created = await _sut.CreateTimeRegistrationAsync(timeRegistrationDTO);
 
             // Assert
             Assert.Null(created);
@@ -41,11 +41,14 @@ namespace Tests.Application.Services
         [Fact]
         public async Task CreateTimeRegistrationAsync_ShouldNotCreate_WhenProjectIsNull()
         {
+            //Arrange
             var timeRegistrationDTO = new TimeRegistrationCreateDTO { ProjectId = Guid.NewGuid(), HoursWorked = 1m };
             _mockProjectService.Setup(ps => ps.GetProjectAsync(timeRegistrationDTO.ProjectId)).ReturnsAsync((ProjectDTO?)null);
 
-            var id = await _timeRegistrationService.CreateTimeRegistrationAsync(timeRegistrationDTO);
+            // Act
+            var id = await _sut.CreateTimeRegistrationAsync(timeRegistrationDTO);
 
+            // Assert
             Assert.Null(id);
             _mockTimeRegistrationRepository.Verify(repo => repo.CreateTimeRegistrationAsync(It.IsAny<TimeRegistrationCreateDTO>()), Times.Never);
         }
@@ -53,55 +56,75 @@ namespace Tests.Application.Services
         [Fact]
         public async Task CreateTimeRegistrationAsync_ShouldNotCreate_WhenProjectIsCompleted()
         {
+            // Arrange
             var timeRegistrationDTO = new TimeRegistrationCreateDTO { ProjectId = Guid.NewGuid(), HoursWorked = 1m };
             _mockProjectService.Setup(ps => ps.GetProjectAsync(timeRegistrationDTO.ProjectId)).ReturnsAsync(new ProjectDTO { IsCompleted = true });
 
-            await _timeRegistrationService.CreateTimeRegistrationAsync(timeRegistrationDTO);
 
+            // Act
+            await _sut.CreateTimeRegistrationAsync(timeRegistrationDTO);
+
+            // Assert
             _mockTimeRegistrationRepository.Verify(repo => repo.CreateTimeRegistrationAsync(It.IsAny<TimeRegistrationCreateDTO>()), Times.Never);
         }
 
         [Fact]
         public async Task CreateTimeRegistrationAsync_ShouldCallRepository_WhenValid()
         {
+            // Arrange
             var timeRegistrationDTO = new TimeRegistrationCreateDTO { ProjectId = Guid.NewGuid(), HoursWorked = 1m };
             _mockProjectService.Setup(ps => ps.GetProjectAsync(timeRegistrationDTO.ProjectId)).ReturnsAsync(new ProjectDTO { IsCompleted = false });
 
-            await _timeRegistrationService.CreateTimeRegistrationAsync(timeRegistrationDTO);
+            // Act
+            await _sut.CreateTimeRegistrationAsync(timeRegistrationDTO);
 
+            // Assert
             _mockTimeRegistrationRepository.Verify(repo => repo.CreateTimeRegistrationAsync(timeRegistrationDTO), Times.Once);
         }
 
         [Fact]
         public async Task DeleteTimeRegistrationAsync_ShouldCallRepository()
         {
+            // Arrange
             var timeRegistrationId = Guid.NewGuid();
-            await _timeRegistrationService.DeleteTimeRegistrationAsync(timeRegistrationId);
+
+            // Act
+            await _sut.DeleteTimeRegistrationAsync(timeRegistrationId);
+
+            // Assert
             _mockTimeRegistrationRepository.Verify(repo => repo.DeleteTimeRegistrationAsync(timeRegistrationId), Times.Once);
         }
 
         [Fact]
         public async Task GetTimeRegistrationAsync_ShouldReturnTimeRegistration_WhenExists()
         {
+            // Arrange
             var timeRegistrationId = Guid.NewGuid();
             var expectedDTO = new TimeRegistrationDTO { Id = timeRegistrationId };
             _mockTimeRegistrationRepository.Setup(repo => repo.GetTimeRegistrationAsync(timeRegistrationId)).ReturnsAsync(expectedDTO);
 
-            var result = await _timeRegistrationService.GetTimeRegistrationAsync(timeRegistrationId);
+            // Act
+            var result = await _sut.GetTimeRegistrationAsync(timeRegistrationId);
 
+
+            // Assert
             Assert.NotNull(result);
             Assert.Equal(timeRegistrationId, result.Id);
         }
 
-        [Fact]
-        public async Task UpdateTimeRegistrationAsync_ShouldReturnFalse_WhenHoursWorkedIsTooLow()
+        [Theory]
+        [InlineData(0.4)]
+        [InlineData(0.3)]
+        [InlineData(0.2)]
+        [InlineData(0.0)]
+        public async Task UpdateTimeRegistrationAsync_ShouldReturnFalse_WhenHoursWorkedIsTooLow(decimal hoursWorked)
         {
             //Arrange
             var timeRegistrationId = Guid.NewGuid();
-            var updatedDTO = new TimeRegistrationDTO { HoursWorked = 0.4m };
+            var updatedDTO = new TimeRegistrationDTO { HoursWorked = hoursWorked };
 
             // Act 
-            var updated = await _timeRegistrationService.UpdateTimeRegistrationAsync(timeRegistrationId, updatedDTO);
+            var updated = await _sut.UpdateTimeRegistrationAsync(timeRegistrationId, updatedDTO);
 
             // Assert
             Assert.False(updated);
@@ -114,11 +137,14 @@ namespace Tests.Application.Services
         [InlineData(8)]
         public async Task UpdateTimeRegistrationAsync_ShouldCallRepository_WhenValid(decimal hoursWorked)
         {
+            // Arrange
             var timeRegistrationId = Guid.NewGuid();
-            var updatedDTO = new TimeRegistrationDTO { HoursWorked = 0.5m };
+            var updatedDTO = new TimeRegistrationDTO { HoursWorked = hoursWorked };
 
-            await _timeRegistrationService.UpdateTimeRegistrationAsync(timeRegistrationId, updatedDTO);
+            // Act
+            await _sut.UpdateTimeRegistrationAsync(timeRegistrationId, updatedDTO);
 
+            // Assert
             _mockTimeRegistrationRepository.Verify(repo => repo.UpdateTimeRegistrationAsync(timeRegistrationId, updatedDTO), Times.Once);
         }
     }

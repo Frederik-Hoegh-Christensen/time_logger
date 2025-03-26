@@ -12,7 +12,7 @@ interface ProjectContextType {
   selectedTimeRegistration: TimeRegistrationDTO | null;
   setSelectedTimeRegistration: (project: TimeRegistrationDTO | null) => void;
   projects: ProjectDTO[];
-  setProjects: (projects: ProjectDTO[]) => void;
+  setProjects: React.Dispatch<React.SetStateAction<ProjectDTO[]>>;
   openEditTimeRegistrationModal: boolean;
   setOpenEditTimeRegistrationModal: (open: boolean) => void;
 }

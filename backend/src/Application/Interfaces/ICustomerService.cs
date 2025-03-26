@@ -10,7 +10,7 @@ namespace Application.Interfaces
     public interface ICustomerService
     {
         Task<Guid?> CreateCustomer(CustomerCreateDTO customerCreateDTO);
-        Task<CustomerDTO> GetCustomer(Guid customerId);
+        Task<CustomerDTO?> GetCustomer(Guid customerId);
         Task DeleteCustomer(Guid customerId);
         Task UpdateCustomer(CustomerDTO customerDTO);
     }

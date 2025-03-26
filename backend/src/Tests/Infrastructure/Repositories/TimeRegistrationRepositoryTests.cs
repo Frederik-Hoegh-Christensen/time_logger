@@ -178,13 +178,16 @@ namespace Tests.Infrastructure.Repositories
         }
 
         [Fact]
-        public async Task UpdateTimeRegistrationAsync_ShouldThrowArgumentNullException_WhenUpdatedTimeRegistrationIsNull()
+        public async Task UpdateTimeRegistrationAsync_ShouldReturnFalse_WhenUpdatedTimeRegistrationIsNull()
         {
             // Arrange
-            var timeRegistration = await _dbContext.TimeRegistrations.FirstOrDefaultAsync();
+            var timeRegistration = await _dbContext.TimeRegistrations.FirstAsync();
 
-            // Act & Assert
-            await Assert.ThrowsAsync<ArgumentNullException>(() => _sut.UpdateTimeRegistrationAsync(timeRegistration.Id, null));
+            // Act 
+            var updated = await _sut.UpdateTimeRegistrationAsync(timeRegistration.Id, null);
+
+            //Assert
+            Assert.False(updated);
         }
 
         [Fact]
@@ -204,6 +207,8 @@ namespace Tests.Infrastructure.Repositories
 
             // Act 
             var updated = await _sut.UpdateTimeRegistrationAsync(invalidId, updatedTimeRegistration);
+
+            // Assert
             Assert.False(updated);
         }
 

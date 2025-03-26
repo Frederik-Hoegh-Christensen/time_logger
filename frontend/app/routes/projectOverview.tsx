@@ -5,7 +5,6 @@ import { useProjectContext } from "~/contexts/projectContext";
 import ProjectRow from "~/projectOverview/components/projectRow";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
-import EditTimeRegistrationModal from "~/sharedComponents/EditTimeRegistrationModal";
 
 
 
@@ -14,7 +13,7 @@ export default function projectOverview() {
   useEffect(() => {
     const fetchProjects = async () => {
       try {
-        const projectsFromApi = await projectService.fetchProjectsByFreelancerId("5088F034-274E-412B-2394-08DD648C3E34");
+        const projectsFromApi = await projectService.fetchProjectsByFreelancerId("DEA192EE-B1D0-43DA-0A7D-08DD6C71F515");
         setProjects(projectsFromApi);
       } catch (error) {
         console.error("Error fetching projects:", error);
@@ -50,12 +49,12 @@ export default function projectOverview() {
   return (
     <div style={{display: 'flex', alignItems: 'center', width: '100%', marginTop: 100, flexDirection: 'column'}}>
       <CreateProjectModal/>
-      {selectedTimeRegistration && <EditTimeRegistrationModal/>}
-      
-      <div style={{display:'flex', flexDirection: 'row', paddingTop: 20}}>
-        <FontAwesomeIcon icon={faChevronDown} onClick={sortProjectsAsc} cursor='pointer' />
-        <FontAwesomeIcon icon={faChevronUp} onClick={sortProjectsDesc} cursor='pointer'/>
+      {projects && projects.length > 1 && (
+        <div style={{display:'flex', flexDirection: 'row', paddingTop: 20}}>
+          <FontAwesomeIcon icon={faChevronDown} onClick={sortProjectsAsc} cursor='pointer' />
+          <FontAwesomeIcon icon={faChevronUp} onClick={sortProjectsDesc} cursor='pointer'/>
       </div>
+      )}
       {projects && projects.length > 0 && (
         projects.map(p => (
           <ProjectRow project={p}/>

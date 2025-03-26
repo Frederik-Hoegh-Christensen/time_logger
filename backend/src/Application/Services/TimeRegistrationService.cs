@@ -17,7 +17,7 @@ namespace Application.Services
         private readonly IProjectService _projectService = projectService;
         public async Task<Guid?> CreateTimeRegistrationAsync(TimeRegistrationCreateDTO timeRegistrationCreateDTO)
         {
-            if (timeRegistrationCreateDTO.HoursWorked < 0.5m)
+            if (timeRegistrationCreateDTO.HoursWorked < 0.5m || timeRegistrationCreateDTO.HoursWorked >= 24m)
             {
                 return null;
             }
@@ -45,7 +45,7 @@ namespace Application.Services
 
         public async Task<bool> UpdateTimeRegistrationAsync(Guid timeRegistrationId, TimeRegistrationDTO updatedTimeRegistration)
         {
-            if (updatedTimeRegistration.HoursWorked < 0.5m)
+            if (updatedTimeRegistration.HoursWorked < 0.5m || updatedTimeRegistration.HoursWorked >= 24m)
             {
                 return false;
             }
