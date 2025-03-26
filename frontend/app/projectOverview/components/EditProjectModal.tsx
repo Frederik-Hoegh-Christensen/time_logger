@@ -28,7 +28,7 @@ interface IProps {
 }
 
 const EditProjectModal: FC<IProps> = ({project, open, onClose, onConfirm}) => {
-  const [errors, setErrors] = useState<{ deadline?: string}>({});
+  const [errors, setErrors] = useState<{ deadline?: string, name?: string}>({});
   const formatDate = (date: string) => new Date(date).toISOString().split('T')[0];
   const [formData, setFormData] = useState({
     projectName: project.name,
@@ -49,6 +49,11 @@ const EditProjectModal: FC<IProps> = ({project, open, onClose, onConfirm}) => {
   // Check if the project deadline is before today
   if (formData.projectDeadline < today || formData.projectDeadline === "") {
     setErrors({ deadline: "Choose a deadline that is not in the past" });
+    return;
+  }
+
+  if (formData.projectName === "" || !formData.projectName || formData.projectName === "") {
+    setErrors({ name: "Input a project name" });
     return;
   }
 
@@ -81,7 +86,7 @@ const EditProjectModal: FC<IProps> = ({project, open, onClose, onConfirm}) => {
           <form onSubmit={handleSubmit} style={{ display: "flex" }}>
                 {/* Project Form (Left Side) */}
                 <div style={{ flex: 1, marginRight: "20px" }}>
-                  <FormControl mb={4}>
+                  <FormControl mb={4} isInvalid={!!errors.name} isRequired>
                     <FormLabel htmlFor="projectName">Project Name</FormLabel>
                     <Input
                       required
@@ -91,6 +96,7 @@ const EditProjectModal: FC<IProps> = ({project, open, onClose, onConfirm}) => {
                       onChange={handleInputChange}
                       placeholder="Enter project name"
                     />
+                    <FormErrorMessage textColor='red'>{errors.name}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl mb={4} isInvalid={!!errors.deadline} isRequired>

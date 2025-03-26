@@ -16,9 +16,9 @@ namespace Application.Mappings
 
             CreateMap<Project, ProjectDTO>()
                 .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer.Name))
-
                 .ReverseMap()
                 .ForMember(dest => dest.Customer, opt => opt.Ignore());
+
             CreateMap<Project, ProjectCreateDTO>().ReverseMap();
 
             CreateMap<TimeRegistrationDTO, TimeRegistration>().ReverseMap()
